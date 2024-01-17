@@ -1,0 +1,24 @@
+def predict_word():
+    data = request.json
+    incomplete_word = data.get('word')
+    number_of_chars = int(data.get('number_of_chars'))
+
+    # Make a request to the Wordnik API to get a list of words
+    api_key = 'YOUR_WORDNIK_API_KEY'  # Replace with your actual Wordnik API key
+    endpoint = f'https://api.wordnik.com/v4/words.json/randomWords?hasDictionaryDef=true&minCorpusCount=1000&minLength={number_of_chars}&maxLength={number_of_chars}&api_key={api_key}&limit=10'
+
+    response = requests.get(endpoint)
+    if response.status_code != 200:
+        return jsonify({'error': 'Failed to retrieve words from the dictionary API'})
+
+    words = [entry['word'] for entry in response.json()]
+
+    # Filter matching words based on missing letters
+    matching_words = [word for word in words if all(c == ' ' or c == incomplete_word[i] for i, c in enumerate(word))]
+
+    # Find a suitable word from the filtered set
+    result = 'invalid'  # Default if no valid word is found
+    if matching_words:
+        result = matching_words[0]  # Pick the first valid word
+
+    return jsonify({'result': result})

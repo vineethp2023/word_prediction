@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>word game</title>
+    <style>
+        body{
+            margin:0;
+            padding:0;
+        }
+        header h3{
+            font-family: 'Lucida Grande', Arial, sans-serif;
+            margin-left: 580px;
+            margin-top: 35px;
+            font-size: 25px;
+            font-weight: bolder;
+        }
+        .box {
+            display: inline-block;
+            width: 20px;
+            padding: 8px;
+            height: 20px;
+            border: 1px solid black;
+            margin: 5px;
+        }
+        input[type=button]{
+            border:1;
+            background-color: green;
+            color:white;
+        }
+        table{
+            padding: 30px;
+            margin-left: 540px;
+            margin-top:130px;
+            border-style: solid;
+            background-color: lavender;
+        }
+        input{
+            padding:10px;
+        }
+        table td{
+            margin-top:30px;
+        }
+        header{
+            height:120px;
+            background-color: lightblue;
+            border-style: solid;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h3>Word prediction game</h3>
+    </header>
+    <table>
+        <form method="post">
+            <thead>
+                <tr scope="row">
+                    <th scope="col" colspan="15">Enter movie name ( at least one letter must be missing)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr scope="row">
+                    <td colspan="6">
+                        <label>Enter number of letters</label>
+                    </td>
+                    <td colspan="9">
+                        <input type="number" id="length" name="length" min="1" max="50" onkeyup="showBoxes(this.value)" onblur="showBoxes(this.value)">
+                    </td>
+                </tr>
+                <tr scope="row">
+                    <td colspan="6">
+                        <label>Enter the word pattern (Don't spell all letters)</label>
+                    </td>
+                    <td colspan="9">
+                        <div id="entry"></div>
+                    </td>
+                </tr>
+                <tr scope="row">
+                    <td colspan="15">
+                        <input type="button" name="submit" value="submit" onclick="find_ans()">
+                    </td>
+                </tr>
+                <tr scope="row">
+                    <td colspan="15">
+                        <p id="result"></p>
+                    </td>
+                </tr>
+            </tbody>
+        </form>
+    </table>
+    <script>
+        function showBoxes(chars) {
+            var container = document.getElementById('entry');
+            container.innerHTML = ''; // Clear previous content
+
+            for (var i = 0; i < chars; i++) {
+                var ele = document.createElement('input');
+                ele.classList.add('box');
+                ele.setAttribute('type','text');
+                ele.setAttribute('maxlength','1');
+                container.appendChild(ele);
+            }
+        }
+        function find_word()
+        {
+            console.log('started');
+            var word = [];
+            console.log('third line');
+            var word_length = document.getElementById('length').value.trim();
+            console.log('jut above loop');
+            for (var i = 0; i < word_length; i++) {
+                console.log('inside loop');
+                var ele = document.getElementsByClassName('box')[i].value.trim();
+                if(ele == '')
+                word.push(' ');
+                else
+                word.push(ele);
+                console.log('Movie_name: '+word);
+            }
+            return word;
+        }
+        function find_ans()
+        {
+            fetch('/predict-word', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                word: find_word(),
+                number_of_chars: document.getElementById('length').value.trim(),
+            })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the predicted movie name or 'invalid' result
+                document.getElementById('result').innerText = data.result;
+                console.log(data.result);
+            });
+        }
+    </script>
+</body>
+</html>
